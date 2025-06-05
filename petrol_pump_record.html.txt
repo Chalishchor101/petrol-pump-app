@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petrol Pump Daily Record</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #0056b3;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="date"],
+        input[type="number"],
+        input[type="text"] {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            font-size: 16px;
+        }
+        .category-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .category-box {
+            flex: 1;
+            min-width: 300px;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 6px;
+            background-color: #f9f9f9;
+        }
+        .category-box h3 {
+            margin-top: 0;
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .calculated-output {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .net-sell-output {
+            font-size: 1.4em;
+            color: #28a745;
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 25px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #dailyRecords {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 30px;
+        }
+        #dailyRecords h2 {
+            margin-bottom: 20px;
+        }
+        .record-table-container {
+            overflow-x: auto;
+        }
+        #recordsTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #recordsTable th, #recordsTable td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: right; /* Align numbers right */
+        }
+        #recordsTable th:first-child, #recordsTable td:first-child {
+            text-align: left; /* Align date left */
+        }
+        #recordsTable th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: bold;
+        }
+        #recordsTable tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #recordsTable tr:hover {
+            background-color: #f1f1f1;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Petrol Pump Daily Sales Record</h1>
+
+        <div class="form-group">
+            <label for="currentDate">Day:</label>
+            <input type="date" id="currentDate" readonly>
+        </div>
+
+        <div class="category-inputs">
+            <div class="category-box">
+                <h3>Petrol (Nozzle 1)</h3>
+                <div class="form-group">
+                    <label for="petrolOpening">Opening Reading:</label>
+                    <input type="number" id="petrolOpening" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="petrolClosing">Closing Reading:</label>
+                    <input type="number" id="petrolClosing" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="petrolPrice">Price (per liter):</label>
+                    <input type="number" id="petrolPrice" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Sale (Liters):</label>
+                    <div id="petrolSale" class="calculated-output">0.00</div>
+                </div>
+                <div class="form-group">
+                    <label>Total Amount:</label>
+                    <div id="petrolAmount" class="calculated-output">0.00</div>
+                </div>
+            </div>
+
+            <div class="category-box">
+                <h3>Diesel (Nozzle 2)</h3>
+                <div class="form-group">
+                    <label for="dieselOpening">Opening Reading:</label>
+                    <input type="number" id="dieselOpening" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="dieselClosing">Closing Reading:</label>
+                    <input type="number" id="dieselClosing" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="dieselPrice">Price (per liter):</label>
+                    <input type="number" id="dieselPrice" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Sale (Liters):</label>
+                    <div id="dieselSale" class="calculated-output">0.00</div>
+                </div>
+                <div class="form-group">
+                    <label>Total Amount:</label>
+                    <div id="dieselAmount" class="calculated-output">0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="net-sell-output">
+            <label>Net Sell of All Category (Total Sales):</label>
+            <div id="netSalesAmount">0.00</div>
+        </div>
+
+        <button onclick="saveDailyRecord()">Save Day Record</button>
+
+        <div id="dailyRecords">
+            <h2>Previous Daily Records</h2>
+            <div class="record-table-container">
+                <table id="recordsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Petrol Opening</th>
+                            <th>Petrol Closing</th>
+                            <th>Petrol Sale (L)</th>
+                            <th>Petrol Price</th>
+                            <th>Petrol Amount</th>
+                            <th>Diesel Opening</th>
+                            <th>Diesel Closing</th>
+                            <th>Diesel Sale (L)</th>
+                            <th>Diesel Price</th>
+                            <th>Diesel Amount</th>
+                            <th>Total Sales</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currentDateInput = document.getElementById('currentDate');
+
+        const petrolOpeningInput = document.getElementById('petrolOpening');
+        const petrolClosingInput = document.getElementById('petrolClosing');
+        const petrolPriceInput = document.getElementById('petrolPrice');
+        const petrolSaleOutput = document.getElementById('petrolSale');
+        const petrolAmountOutput = document.getElementById('petrolAmount');
+
+        const dieselOpeningInput = document.getElementById('dieselOpening');
+        const dieselClosingInput = document.getElementById('dieselClosing');
+        const dieselPriceInput = document.getElementById('dieselPrice');
+        const dieselSaleOutput = document.getElementById('dieselSale');
+        const dieselAmountOutput = document.getElementById('dieselAmount');
+
+        const netSalesAmountOutput = document.getElementById('netSalesAmount');
+        const recordsTableBody = document.querySelector('#recordsTable tbody');
+
+        let dailyRecords = [];
+
+        // --- Initialization on page load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setCurrentDate();
+            loadRecords();
+            attachEventListeners();
+            updateCalculations(); // Initial calculation update
+        });
+
+        function setCurrentDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(today.getDate()).padStart(2, '0');
+            currentDateInput.value = `${year}-${month}-${day}`;
+        }
+
+        function attachEventListeners() {
+            petrolOpeningInput.addEventListener('input', updateCalculations);
+            petrolClosingInput.addEventListener('input', updateCalculations);
+            petrolPriceInput.addEventListener('input', updateCalculations);
+
+            dieselOpeningInput.addEventListener('input', updateCalculations);
+            dieselClosingInput.addEventListener('input', updateCalculations);
+            dieselPriceInput.addEventListener('input', updateCalculations);
+        }
+
+        function updateCalculations() {
+            const petrolOpening = parseFloat(petrolOpeningInput.value) || 0;
+            const petrolClosing = parseFloat(petrolClosingInput.value) || 0;
+            const petrolPrice = parseFloat(petrolPriceInput.value) || 0;
+
+            const dieselOpening = parseFloat(dieselOpeningInput.value) || 0;
+            const dieselClosing = parseFloat(dieselClosingInput.value) || 0;
+            const dieselPrice = parseFloat(dieselPriceInput.value) || 0;
+
+            // Petrol calculations
+            const petrolSale = Math.max(0, petrolClosing - petrolOpening); // Ensure sale isn't negative
+            const petrolAmount = petrolSale * petrolPrice;
+            petrolSaleOutput.textContent = petrolSale.toFixed(2);
+            petrolAmountOutput.textContent = petrolAmount.toFixed(2);
+
+            // Diesel calculations
+            const dieselSale = Math.max(0, dieselClosing - dieselOpening);
+            const dieselAmount = dieselSale * dieselPrice;
+            dieselSaleOutput.textContent = dieselSale.toFixed(2);
+            dieselAmountOutput.textContent = dieselAmount.toFixed(2);
+
+            // Net sales
+            const netSales = petrolAmount + dieselAmount;
+            netSalesAmountOutput.textContent = netSales.toFixed(2);
+        }
+
+        function saveDailyRecord() {
+            const date = currentDateInput.value;
+
+            // Check if record for today already exists
+            const existingRecordIndex = dailyRecords.findIndex(record => record.date === date);
+
+            const record = {
+                date: date,
+                petrolOpening: parseFloat(petrolOpeningInput.value) || 0,
+                petrolClosing: parseFloat(petrolClosingInput.value) || 0,
+                petrolPrice: parseFloat(petrolPriceInput.value) || 0,
+                petrolSale: parseFloat(petrolSaleOutput.textContent) || 0,
+                petrolAmount: parseFloat(petrolAmountOutput.textContent) || 0,
+                dieselOpening: parseFloat(dieselOpeningInput.value) || 0,
+                dieselClosing: parseFloat(dieselClosingInput.value) || 0,
+                dieselPrice: parseFloat(dieselPriceInput.value) || 0,
+                dieselSale: parseFloat(dieselSaleOutput.textContent) || 0,
+                dieselAmount: parseFloat(dieselAmountOutput.textContent) || 0,
+                netSales: parseFloat(netSalesAmountOutput.textContent) || 0
+            };
+
+            if (existingRecordIndex !== -1) {
+                // Update existing record
+                dailyRecords[existingRecordIndex] = record;
+                alert('Record for ' + date + ' updated successfully!');
+            } else {
+                // Add new record
+                dailyRecords.push(record);
+                alert('Record for ' + date + ' saved successfully!');
+            }
+
+            saveRecordsToLocalStorage();
+            renderRecords();
+            // Optional: Clear inputs for next entry, or just let the date update next day
+            // clearInputs();
+        }
+
+        function loadRecords() {
+            const storedRecords = localStorage.getItem('petrolPumpRecords');
+            if (storedRecords) {
+                dailyRecords = JSON.parse(storedRecords);
+            }
+            renderRecords();
+        }
+
+        function saveRecordsToLocalStorage() {
+            localStorage.setItem('petrolPumpRecords', JSON.stringify(dailyRecords));
+        }
+
+        function renderRecords() {
+            recordsTableBody.innerHTML = ''; // Clear existing rows
+            dailyRecords.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date, newest first
+
+            dailyRecords.forEach((record, index) => {
+                const row = recordsTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${record.date}</td>
+                    <td>${record.petrolOpening.toFixed(2)}</td>
+                    <td>${record.petrolClosing.toFixed(2)}</td>
+                    <td>${record.petrolSale.toFixed(2)}</td>
+                    <td>${record.petrolPrice.toFixed(2)}</td>
+                    <td>${record.petrolAmount.toFixed(2)}</td>
+                    <td>${record.dieselOpening.toFixed(2)}</td>
+                    <td>${record.dieselClosing.toFixed(2)}</td>
+                    <td>${record.dieselSale.toFixed(2)}</td>
+                    <td>${record.dieselPrice.toFixed(2)}</td>
+                    <td>${record.dieselAmount.toFixed(2)}</td>
+                    <td>${record.netSales.toFixed(2)}</td>
+                    <td><button class="delete-btn" onclick="deleteRecord(${index})">Delete</button></td>
+                `;
+            });
+        }
+
+        function deleteRecord(index) {
+            // Find the actual record to delete based on the current sorted order
+            // Re-sort to ensure index matches the displayed table
+            dailyRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const recordToDeleteDate = dailyRecords[index].date;
+
+            // Remove the record from the original unsorted dailyRecords array
+            dailyRecords = dailyRecords.filter(record => record.date !== recordToDeleteDate);
+
+            saveRecordsToLocalStorage();
+            renderRecords();
+            alert('Record deleted successfully!');
+        }
+
+        // Optional: Function to clear inputs after saving (if desired)
+        function clearInputs() {
+            petrolOpeningInput.value = '0';
+            petrolClosingInput.value = '0';
+            petrolPriceInput.value = '0';
+            dieselOpeningInput.value = '0';
+            dieselClosingInput.value = '0';
+            dieselPriceInput.value = '0';
+            updateCalculations(); // Reset calculated outputs
+        }
+
+    </script>
+</body>
+</html>
